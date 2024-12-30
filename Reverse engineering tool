@@ -1,0 +1,34 @@
+#include <Windows.h>
+#include <iostream>
+
+int main() {
+    // Open the process
+    HANDLE hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, 1234);
+    if (hProcess == NULL) {
+        std::cerr << "Failed to open process" << std::endl;
+        return 1;
+    }
+
+    // Scan the memory for a specific value
+    BYTE* pMemory = (BYTE*)0x10000000;
+    DWORD dwSize = 0x1000;
+    BYTE* pFound = (BYTE*)0;
+    if (ReadProcessMemory(hProcess, pMemory, &pFound, dwSize, NULL)) {
+        std::cout << "Found value at address " << pFound << std::endl;
+    } else {
+        std::cerr << "Failed to read process memory" << std::endl;
+    }
+
+    // Edit the memory
+    BYTE* pEdit = (BYTE*)0x10000000;
+    BYTE* pValue = (BYTE*)0x12;
+    if (WriteProcessMemory(hProcess, pEdit, pValue, 1, NULL)) {
+        std::cout << "Edited value at address " << pEdit << std::endl;
+    } else {
+        std::cerr << "Failed to write process memory" << std::endl;
+    }
+
+    // Close the process
+    CloseHandle(hProcess);
+    return 0;
+}
